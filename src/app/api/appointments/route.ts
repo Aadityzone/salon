@@ -22,6 +22,8 @@ export async function POST(request: NextRequest) {
   const input = parsed.data;
   try {
     await connectDB();
+    // Ensure the unique staff/slot index exists before accepting any bookings.
+    await SlotReservation.createIndexes();
     const service = await Service.findOne({ _id: input.serviceId, active: true });
     if (!service) return NextResponse.json({ error: "That service is no longer available." }, { status: 404 });
     const startsAt = atIST(input.date, input.time);
