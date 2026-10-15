@@ -6,15 +6,19 @@ import Service from "@/models/Service";
 import { Appointment, SlotReservation } from "@/models/Appointment";
 import { atSalonTime, getBusinessHours, isValidDateString } from "@/lib/business-hours";
 export const runtime = "nodejs";
-// Index creation is shared across concurrent first-time booking requests. Calling
-// createIndexes independently inside every request can race during cold starts.
-let slotIndexesReady: Promise<unknown> | undefined;
-function ensureSlotIndexes() {
-  slotIndexesReady ??= SlotReservation.createIndexes().catch((error) => {
-    slotIndexesReady = undefined;
+// Initialize both collections/indexes once before accepting concurrent bookings.
+// MongoDB can race when several first writes try to create a collection at once;
+// the shared promise also ensures the unique slot index is ready before any write.
+let bookingIndexesReady: Promise<unknown> | undefined;
+function ensureBookingIndexes() {
+  bookingIndexesReady ??= Promise.all([
+    Appointment.createIndexes(),
+    SlotReservation.createIndexes(),
+  ]).catch((error) => {
+    bookingIndexesReady = undefined;
     throw error;
   });
-  return slotIndexesReady;
+  return bookingIndexesReady;
 }
 
 const BookingInput = z.object({
@@ -33,7 +37,7 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
     // Ensure the unique staff/slot index exists before accepting any bookings.
-    await ensureSlotIndexes();
+    await ensureBookingIndexes();
     const service = await Service.findOne({ _id: input.serviceId, active: true });
     if (!service) return NextResponse.json({ error: "That service is no longer available." }, { status: 404 });
     const startsAt = atSalonTime(input.date, input.time);
