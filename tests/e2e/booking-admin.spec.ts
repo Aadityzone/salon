@@ -3,9 +3,9 @@ import { expect, test } from "@playwright/test";
 test("booking page presents the appointment flow", async ({ page }) => {
   await page.goto("/book");
   await expect(page.getByRole("heading", { name: /book your moment/i })).toBeVisible();
-  await expect(page.getByLabel("Choose a date")).toBeVisible();
+  await expect(page.getByLabel("Appointment date")).toBeVisible();
   await expect(page.getByRole("heading", { name: /choose your ritual/i })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /your details/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /almost yours/i })).toBeVisible();
 });
 
 test("owner dashboard requires authentication", async ({ page, request }) => {
