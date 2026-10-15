@@ -4,11 +4,11 @@ import { z } from "zod";
 import { connectDB } from "@/lib/mongodb";
 import Service from "@/models/Service";
 import { Appointment, SlotReservation } from "@/models/Appointment";
-import { atSalonTime, getBusinessHours } from "@/lib/business-hours";
+import { atSalonTime, getBusinessHours, isValidDateString } from "@/lib/business-hours";
 export const runtime = "nodejs";
 const BookingInput = z.object({
   serviceId: z.string().refine(mongoose.isValidObjectId, "Invalid service."),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  date: z.string().refine(isValidDateString, "Invalid calendar date."),
     time: z.string().regex(/^(?:[01]\d|2[0-3]):(?:00|15|30|45)$/),
   customerName: z.string().trim().min(2).max(100),
   customerPhone: z.string().trim().min(7).max(25),
