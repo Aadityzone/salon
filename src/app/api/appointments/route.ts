@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/mongodb";
 import Service from "@/models/Service";
 import { Appointment, SlotReservation } from "@/models/Appointment";
 import { atSalonTime, getBusinessHours, isValidDateString } from "@/lib/business-hours";
+import { getSalonStaff, staffCanTakeTime } from "@/lib/staff";
 export const runtime = "nodejs";
 
 async function notifyOwner(appointment: { id: string; customerName: string; customerPhone: string; serviceName: string; date: string; time: string; staffId: string; priceInPaise: number }) {
@@ -68,7 +69,11 @@ export async function POST(request: NextRequest) {
       priceInPaise: service.priceInPaise, startsAt, endsAt, status: "confirmed",
     });
     const slotCount = Math.ceil(service.durationMinutes / 15);
-    const staffIds = input.staffId === "any" ? ["team-1", "team-2"] : [input.staffId];
+    const staffProfiles = getSalonStaff();
+    const staffIds = (input.staffId === "any" ? staffProfiles.map(person => person.id) : [input.staffId]).filter(id => {
+      const person = staffProfiles.find(candidate => candidate.id === id);
+      return person ? staffCanTakeTime(person, input.date, input.time, service.durationMinutes) : false;
+    });
     for (const staffId of staffIds) {
       const reservations = Array.from({ length: slotCount }, (_, index) => ({
         staffId, slotStart: new Date(startsAt.getTime() + index * 15 * 60_000), appointmentId: appointment._id,
@@ -76,8 +81,9 @@ export async function POST(request: NextRequest) {
       try {
         await SlotReservation.insertMany(reservations, { ordered: true });
         await Appointment.updateOne({ _id: appointment._id }, { $set: { staffId } });
+        const staffName = staffProfiles.find(person => person.id === staffId)?.name ?? "Assigned team member";
         await notifyOwner({ id: String(appointment._id), customerName: input.customerName, customerPhone: input.customerPhone, serviceName: service.name, date: input.date, time: input.time, staffId, priceInPaise: service.priceInPaise });
-        return NextResponse.json({ appointment: { id: String(appointment._id), serviceName: service.name, date: input.date, time: input.time, staffId, status: "confirmed", priceInPaise: service.priceInPaise }, message: "Your appointment is confirmed." }, { status: 201 });
+        return NextResponse.json({ appointment: { id: String(appointment._id), serviceName: service.name, date: input.date, time: input.time, staffId, staffName, status: "confirmed", priceInPaise: service.priceInPaise }, message: "Your appointment is confirmed." }, { status: 201 });
       } catch {
         await SlotReservation.deleteMany({ appointmentId: appointment._id });
       }
