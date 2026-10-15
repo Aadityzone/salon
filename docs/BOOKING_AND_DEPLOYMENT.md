@@ -38,7 +38,7 @@
 - `POST /api/appointments`: create a booking. Requires `serviceId`, `date`, `time`, `customerName`, and `customerPhone`; email and notes are optional.
 - `POST /api/admin/login`, `POST /api/admin/logout`, `GET /api/admin/me`: owner session.
 - `GET /api/admin/appointments`: protected appointment list.
-- `PATCH /api/admin/appointments?id=...`: protected status update with `confirmed`, `cancelled`, or `completed`.
+- `PATCH /api/admin/appointments?id=...`: protected status transition from `confirmed` to `cancelled` or `completed`; terminal appointments cannot be changed again.
 
 ## Deployment checklist
 
