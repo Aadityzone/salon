@@ -13,7 +13,7 @@ export async function GET() {
     return NextResponse.json({ appointments: appointments.map(a => ({ id: String(a._id), customerName: a.customerName, customerPhone: a.customerPhone, customerEmail: a.customerEmail, notes: a.notes, serviceName: a.serviceName, durationMinutes: a.durationMinutes, priceInPaise: a.priceInPaise, staffId: a.staffId, startsAt: a.startsAt, endsAt: a.endsAt, status: a.status })) });
   } catch { return NextResponse.json({ error: "Could not load appointments." }, { status: 503 }); }
 }
-const StatusInput = z.object({ status: z.enum(["confirmed", "cancelled", "completed"]) });
+const StatusInput = z.object({ status: z.enum(["cancelled", "completed"]) });
 export async function PATCH(request: NextRequest) {
   if (!await isOwnerAuthenticated()) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   const id = request.nextUrl.searchParams.get("id");
