@@ -3,6 +3,8 @@
 ## Implemented on `feat/luxury-salon-scroll-demo`
 
 - Premium Next.js homepage with GSAP scroll storytelling, Motion interactions, responsive layout, and reduced-motion handling.
+- Category-based homepage service explorer for Hair, Skin, Nails, and Makeup, with an animated translucent mirror-glass panel and service-level booking links.
+- Full illustrative service catalogue seeded in MongoDB; homepage service links preselect the requested service in the booking form.
 - MongoDB/Mongoose connection helper and service, appointment, and slot-reservation models.
 - Services API, availability API, booking API, health endpoint, and owner authentication endpoints.
 - Unique per-staff/per-15-minute slot index to prevent overlapping bookings from claiming the same staff slots.
