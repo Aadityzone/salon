@@ -54,7 +54,9 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   await page.getByRole("button", { name: /sign in securely/i }).click();
   await expect(page.getByRole("heading", { name: /the appointment book/i })).toBeVisible();
   await expect(page.getByText(new RegExp(`CI Guest ${testInfo.project.name}`)).first()).toBeVisible();
-  await page.getByRole("button", { name: /cancel/i }).first().click();
+  const bookingCard = page.locator("article").filter({ hasText: "CI Guest " + testInfo.project.name }).first();
+  await expect(bookingCard).toBeVisible();
+  await bookingCard.getByRole("button", { name: /cancel/i }).click();
   const reopened = await request.post("/api/appointments", { data: payload(4) });
   expect(reopened.status()).toBe(201);
 });
