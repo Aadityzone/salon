@@ -15,7 +15,7 @@ A premium Next.js salon website with a MongoDB-backed appointment flow, protecte
 
 ## Routes
 
-- `/` — premium salon homepage
+- `/` — premium salon homepage with animated Hair, Skin, Nails, and Makeup category menus; service links preselect the chosen treatment on the booking page
 - `/book` — customer appointment booking
 - `/admin` — owner sign-in and appointment dashboard
 - `/admin/services` — protected service catalogue management
