@@ -78,3 +78,10 @@
 .consultation-result>strong{font-family:"Playfair Display",Georgia,serif;font-weight:400;font-size:1.2rem;margin-right:auto}
 .consultation-result .pill{white-space:nowrap}
 @media(max-width:760px){.consultation-card{grid-template-columns:1fr;gap:20px;padding:22px 17px;margin-top:28px}.consultation-options{grid-template-columns:1fr}.consultation-option{min-height:48px}.consultation-result{grid-column:1;display:grid;grid-template-columns:1fr auto;gap:8px 12px}.consultation-result>span{grid-column:1/-1}.consultation-result>strong{font-size:1.1rem}.consultation-result .pill{font-size:.66rem;padding:11px 12px}}
+
+/* Small editorial filters for the inspiration gallery. */
+.gallery-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.gallery-filter{border:1px solid var(--line);background:rgba(255,255,255,.26);color:var(--espresso);padding:10px 16px;font:inherit;font-size:.68rem;cursor:pointer;transition:background .2s,border-color .2s}
+.gallery-filter.active{background:var(--espresso);color:var(--ivory);border-color:var(--espresso)}
+.gallery-filter:focus-visible{outline:2px solid var(--rose-dark);outline-offset:3px}
+@media(max-width:640px){.gallery-filters{gap:6px;margin-bottom:18px}.gallery-filter{padding:9px 12px;font-size:.64rem}}
