@@ -68,7 +68,10 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   // The database is shared by both browser projects and retries. Wait for this
   // project's booking specifically so another project's older booking cannot
   // satisfy the poll before the current appointment appears in the owner list.
-  await expect(async () => {
+  let guestBookingFound = false;
+  // Poll without Playwright's newer expect.poll/toPass helpers so this test
+  // remains compatible with the repository's installed Playwright typings.
+  for (let attempt = 0; attempt < 30; attempt += 1) {
     const result = await page.evaluate(async (expectedGuestName) => {
       const response = await fetch("/api/admin/appointments", { cache: "no-store" });
       if (!response.ok) return response.status();
@@ -77,8 +80,13 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
         appointment.customerName.startsWith(expectedGuestName)
       ) ? 200 : 202;
     }, guestName);
-    expect(result).toBe(200);
-  }).toPass({ timeout: 15000 });
+    if (result === 200) {
+      guestBookingFound = true;
+      break;
+    }
+    await page.waitForTimeout(500);
+  }
+  expect(guestBookingFound).toBe(true);
   // The API poll proves persistence; refresh the dashboard state so the UI
   // renders the booking even if its first request ran before MongoDB settled.
   await page.getByRole("button", { name: /refresh/i }).click();
