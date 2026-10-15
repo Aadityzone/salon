@@ -45,7 +45,7 @@ const BookingInput = z.object({
   date: z.string().refine(isValidDateString, "Invalid calendar date."),
   time: z.string().regex(/^(?:[01]\d|2[0-3]):(?:00|15|30|45)$/),
   customerName: z.string().trim().min(2).max(100),
-  customerPhone: z.string().trim().min(7).max(25).regex(/^[+()\\d\\s.-]+$/, "Enter a valid phone number.").refine(value => value.replace(/\\D/g, "").length >= 7, "Enter at least seven digits."),
+  customerPhone: z.string().trim().min(7).max(25).regex(/^[+()\d\s.-]+$/, "Enter a valid phone number.").refine(value => value.replace(/\D/g, "").length >= 7, "Enter at least seven digits."),
   customerEmail: z.string().trim().email().max(254).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional(),
 });
