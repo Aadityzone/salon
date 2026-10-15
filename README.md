@@ -16,13 +16,13 @@ A premium Next.js salon website with a MongoDB-backed appointment flow, protecte
 ## Routes
 
 - `/` — premium salon homepage with animated Hair, Skin, Nails, and Makeup category menus; service links preselect the chosen treatment on the booking page
-- `/book` — customer appointment booking
+- `/book` — customer appointment booking with preferred stylist selection and stylist-specific availability
 - `/admin` — owner sign-in and appointment dashboard
 - `/admin/services` — protected service catalogue management
 - `/api/health` — MongoDB connectivity check
 - `/api/services` — active salon services
-- `/api/availability?serviceId=<id>&date=YYYY-MM-DD` — available times
-- `POST /api/appointments` — create an appointment with unique staff/15-minute slot reservations
+- `/api/availability?serviceId=<id>&date=YYYY-MM-DD&staffId=any|team-1|team-2` — available times for any stylist or a selected team member
+- `POST /api/appointments` — create an appointment with unique staff/15-minute slot reservations; optionally posts confirmed bookings to `OWNER_NOTIFICATION_WEBHOOK`
 
 ## Run locally
 
@@ -64,8 +64,8 @@ Bookings use Asia/Kolkata time and configurable opening hours. The server valida
 
 - Replace all starter service names/prices/durations and confirm real business hours.
 - Set the real public salon name/contact/address and approved/licensed images.
-- Set production MongoDB Atlas credentials and Vercel environment variables separately from development.
-- Add staff management, blocked dates, customer cancellation, notification delivery, rate limiting, audit logs, monitoring/backups, and privacy/cancellation policies.
+- Set production MongoDB Atlas credentials and Vercel environment variables separately from development. Configure `OWNER_NOTIFICATION_WEBHOOK` with a trusted endpoint if the owner needs server-to-server booking alerts; leave it blank to disable external notifications.
+- Replace generic Stylist 1 / Stylist 2 labels with real staff profiles and availability. Add blocked dates, customer cancellation, a tested notification provider, rate limiting, audit logs, monitoring/backups, and privacy/cancellation policies.
 - Run all quality checks on the latest commit and test with the owner before launch.
 
 ## Motion direction
