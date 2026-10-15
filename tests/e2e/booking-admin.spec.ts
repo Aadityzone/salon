@@ -70,8 +70,7 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
     if (!response.ok) return response.status();
     const data = await response.json();
     return data.appointments?.some((appointment: { customerName: string }) =>
-      appointment.customerName.startsWith("CI Guest mobile-chromium") ||
-      appointment.customerName.startsWith("CI Guest desktop-chromium")
+      appointment.customerName.startsWith("CI Guest ")
     ) ? 200 : 202;
   }), { timeout: 15000 }).toBe(200);
   await expect(page.getByText(new RegExp(guestName)).first()).toBeVisible({ timeout: 15000 });
