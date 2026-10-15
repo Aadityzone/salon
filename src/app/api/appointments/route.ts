@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 const BookingInput = z.object({
   serviceId: z.string().refine(mongoose.isValidObjectId, "Invalid service."),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  time: z.string().regex(/^(?:1[0-8]|10|11|12|13|14|15|16|17|18):(?:00|15|30|45)$/),
+  time: z.string().regex(/^(?:[01]\\d|2[0-3]):(?:00|15|30|45)$/),
   customerName: z.string().trim().min(2).max(100),
   customerPhone: z.string().trim().min(7).max(25),
   customerEmail: z.string().trim().email().max(254).optional().or(z.literal("")),
