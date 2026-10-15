@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, Clock3, LoaderCircle, Scissors } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, Clock3, LoaderCircle } from "lucide-react";
 
 type Service = { id: string; name: string; description: string; durationMinutes: number; priceInPaise: number; category: string };
 type Slot = { time: string; available: boolean };
@@ -30,9 +30,9 @@ export default function BookingPage() {
     <div style={{maxWidth:1040,margin:"0 auto"}}>
       <Link href="/" className="wordmark" style={{display:"inline-block",color:"var(--espresso)",marginBottom:48}}>MAISON BELLE<small>BEAUTY · HAIR · SKIN</small></Link>
       {confirmed ? <section style={{maxWidth:650,margin:"30px auto",background:"var(--paper)",padding:"clamp(28px,6vw,64px)",borderRadius:4,textAlign:"center",border:"1px solid var(--line)"}}>
-        <CheckCircle2 size={44} color="var(--rose-dark)" style={{margin:"0 auto 22px"}}/><p className="eyebrow section-kicker">YOUR MOMENT IS RESERVED</p><h1 className="serif" style={{fontSize:"clamp(2.5rem,6vw,4.5rem)",margin:"0 0 16px"}}>You're booked.</h1><p className="muted">Your appointment request has been saved successfully.</p>
+        <CheckCircle2 size={44} color="var(--rose-dark)" style={{margin:"0 auto 22px"}}/><p className="eyebrow section-kicker">YOUR MOMENT IS RESERVED</p><h1 className="serif" style={{fontSize:"clamp(2.5rem,6vw,4.5rem)",margin:"0 0 16px"}}>You&apos;re booked.</h1><p className="muted">Your appointment request has been saved successfully.</p>
         <div style={{textAlign:"left",background:"var(--ivory)",padding:22,margin:"28px 0",lineHeight:2}}><strong>{confirmed.serviceName}</strong><br/>{confirmed.date} · {confirmed.time}<br/>{money(confirmed.priceInPaise)} · {confirmed.status}</div>
-        <p className="muted" style={{fontSize:13}}>Keep a note of your appointment details. Add customer confirmation messaging once the salon's contact and notification settings are configured.</p><Link href="/" className="pill pill-dark" style={{marginTop:18}}>Back to Maison Belle <ArrowRight size={15}/></Link>
+        <p className="muted" style={{fontSize:13}}>Keep a note of your appointment details. Add customer confirmation messaging once the salon&apos;s contact and notification settings are configured.</p><Link href="/" className="pill pill-dark" style={{marginTop:18}}>Back to Maison Belle <ArrowRight size={15}/></Link>
       </section> : <><div style={{maxWidth:690,marginBottom:38}}><p className="eyebrow section-kicker">A LITTLE TIME, JUST FOR YOU</p><h1 className="serif" style={{fontSize:"clamp(3rem,7vw,6rem)",lineHeight:.98,margin:"0 0 20px"}}>Book your<br/><i>moment.</i></h1><p className="muted" style={{lineHeight:1.8,maxWidth:540}}>Choose your ritual, find a time that suits you, and leave the details to us.</p></div>
       <form onSubmit={submit} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(min(100%,320px),1fr))",gap:22,alignItems:"start"}}>
         <div style={{background:"var(--paper)",border:"1px solid var(--line)",padding:"clamp(20px,4vw,34px)"}}>
