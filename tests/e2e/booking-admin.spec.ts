@@ -74,7 +74,7 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const result = await page.evaluate(async (expectedGuestName) => {
       const response = await fetch("/api/admin/appointments", { cache: "no-store" });
-      if (!response.ok) return response.status;
+      if (!response.ok) return Number(response.status);
       const data = await response.json();
       return data.appointments?.some((appointment: { customerName: string }) =>
         appointment.customerName.startsWith(expectedGuestName)
