@@ -30,8 +30,15 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   const service = services[0];
   expect(service).toBeTruthy();
 
-  const date = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
-    .toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  // Give each browser project and retry a separate future date so a failed
+  // attempt cannot leave reservations that poison the next retry.
+  const daysAhead = 2 + testInfo.retry + (testInfo.project.name.includes("mobile") ? 5 : 0);
+  const future = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000);
+  const dateParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(future);
+  const dateValues = Object.fromEntries(dateParts.map(part => [part.type, part.value]));
+  const date = `${dateValues.year}-${dateValues.month}-${dateValues.day}`;
   const time = testInfo.project.name.includes("mobile") ? "13:00" : "10:00";
   const payload = (index: number) => ({
     serviceId: service.id,
