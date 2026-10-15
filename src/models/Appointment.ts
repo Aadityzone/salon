@@ -1,4 +1,4 @@
-import mongoose, { Schema, type Model } from "mongoose";
+import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
 
 const AppointmentSchema = new Schema({
   customerName: { type: String, required: true, trim: true, maxlength: 100 },
@@ -15,7 +15,8 @@ const AppointmentSchema = new Schema({
   status: { type: String, enum: ["confirmed", "cancelled", "completed"], default: "confirmed", index: true },
 }, { timestamps: true });
 AppointmentSchema.index({ startsAt: 1, status: 1 });
-export const Appointment = (mongoose.models.Appointment as Model<any>) || mongoose.model("Appointment", AppointmentSchema);
+type AppointmentDocument = InferSchemaType<typeof AppointmentSchema>;
+export const Appointment = (mongoose.models.Appointment as Model<AppointmentDocument>) || mongoose.model<AppointmentDocument>("Appointment", AppointmentSchema);
 
 const SlotReservationSchema = new Schema({
   staffId: { type: String, required: true },
@@ -23,4 +24,5 @@ const SlotReservationSchema = new Schema({
   appointmentId: { type: Schema.Types.ObjectId, required: true, index: true },
 }, { timestamps: true });
 SlotReservationSchema.index({ staffId: 1, slotStart: 1 }, { unique: true });
-export const SlotReservation = (mongoose.models.SlotReservation as Model<any>) || mongoose.model("SlotReservation", SlotReservationSchema);
+type SlotReservationDocument = InferSchemaType<typeof SlotReservationSchema>;
+export const SlotReservation = (mongoose.models.SlotReservation as Model<SlotReservationDocument>) || mongoose.model<SlotReservationDocument>("SlotReservation", SlotReservationSchema);
