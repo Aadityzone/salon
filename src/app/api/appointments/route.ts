@@ -8,7 +8,7 @@ import { atSalonTime, getBusinessHours, isValidDateString } from "@/lib/business
 import { getSalonStaff, staffCanTakeTime } from "@/lib/staff";
 export const runtime = "nodejs";
 
-async function notifyOwner(appointment: { id: string; customerName: string; customerPhone: string; serviceName: string; date: string; time: string; staffId: string; priceInPaise: number }) {
+async function notifyOwner(appointment: { id: string; customerName: string; customerPhone: string; serviceName: string; date: string; time: string; staffId: string; staffName: string; priceInPaise: number }) {
   const webhook = process.env.OWNER_NOTIFICATION_WEBHOOK?.trim();
   if (!webhook) return;
   try {
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         await SlotReservation.insertMany(reservations, { ordered: true });
         await Appointment.updateOne({ _id: appointment._id }, { $set: { staffId } });
         const staffName = staffProfiles.find(person => person.id === staffId)?.name ?? "Assigned team member";
-        await notifyOwner({ id: String(appointment._id), customerName: input.customerName, customerPhone: input.customerPhone, serviceName: service.name, date: input.date, time: input.time, staffId, priceInPaise: service.priceInPaise });
+        await notifyOwner({ id: String(appointment._id), customerName: input.customerName, customerPhone: input.customerPhone, serviceName: service.name, date: input.date, time: input.time, staffId, staffName, priceInPaise: service.priceInPaise });
         return NextResponse.json({ appointment: { id: String(appointment._id), serviceName: service.name, date: input.date, time: input.time, staffId, staffName, status: "confirmed", priceInPaise: service.priceInPaise }, message: "Your appointment is confirmed." }, { status: 201 });
       } catch {
         await SlotReservation.deleteMany({ appointmentId: appointment._id });
