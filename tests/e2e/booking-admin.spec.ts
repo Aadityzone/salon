@@ -76,6 +76,9 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
       appointment.customerName.startsWith(expectedGuestName)
     ) ? 200 : 202;
   }, guestName), { timeout: 15000 }).toBe(200);
+  // The API poll proves persistence; refresh the dashboard state so the UI
+  // renders the booking even if its first request ran before MongoDB settled.
+  await page.getByRole("button", { name: /refresh/i }).click();
   await expect(page.getByText(new RegExp(guestName)).first()).toBeVisible({ timeout: 15000 });
   const bookingCard = page.locator("article").filter({ hasText: "CI Guest " + testInfo.project.name }).first();
   await expect(bookingCard).toBeVisible();
