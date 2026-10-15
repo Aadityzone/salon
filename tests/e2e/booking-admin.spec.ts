@@ -68,7 +68,13 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   // Start a fresh authenticated dashboard session after the API writes finish.
   // This exercises the same reload path owners use when reopening the appointment book.
   await page.reload();
-  await expect(page.getByRole("heading", { name: /the appointment book/i })).toBeVisible();
+  const sessionAfterReload = await page.evaluate(async () => {
+    const response = await fetch("/api/admin/me", { cache: "no-store" });
+    return { status: response.status, body: await response.text(), url: window.location.href };
+  });
+  console.log("Owner session after dashboard reload:", sessionAfterReload);
+  console.log("Headings after dashboard reload:", await page.locator("h1").allTextContents());
+  await expect(page.getByRole("heading", { name: /the appointment book/i })).toBeVisible({ timeout: 15000 });
   const guestName = `CI Guest ${testInfo.project.name}`;
   // The database is shared by both browser projects and retries. Wait for this
   // project's booking specifically so another project's older booking cannot
