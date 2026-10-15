@@ -1,25 +1,33 @@
 # Implementation Status — Maison Belle
 
-## Current state
+## Implemented on `feat/luxury-salon-scroll-demo`
 
-The feature branch contains the Next.js app scaffold, global design system, homepage sections, GSAP ScrollTrigger pinned chapter treatment for wide screens, Motion interactions, mobile/reduced-motion alternative, and architecture/test notes.
+- Premium Next.js homepage with GSAP scroll storytelling, Motion interactions, responsive layout, and reduced-motion handling.
+- MongoDB/Mongoose connection helper and service, appointment, and slot-reservation models.
+- Services API, availability API, booking API, health endpoint, and owner authentication endpoints.
+- Unique per-staff/per-15-minute slot index to prevent overlapping bookings from claiming the same staff slots.
+- Customer booking page at `/book`, owner login/dashboard at `/admin`, and homepage booking CTAs.
+- Seed script, environment-variable template, booking/deployment guide, and additional Playwright smoke tests.
 
-## Important limitations
+## Must still be completed or verified
 
-- Build, lint, TypeScript and live-browser checks have not been executed by this workflow.
-- Contact data and WhatsApp link are placeholders; configure a real business number before use.
-- Services and prices, testimonials, hours/address and remote imagery are illustrative.
-- There is no database-backed booking system. CTAs initiate an enquiry only.
-- Remote image URLs should be verified and replaced with approved/licensed client assets before production.
-- Playwright MCP is not yet verified against a running local application.
+- This GitHub-editing environment cannot run the repository locally; TypeScript, lint, production build and Playwright results after these latest changes have **not** been verified.
+- Real MongoDB Atlas URI, owner email, bcrypt password hash, and session secret must be set locally and in Vercel Preview environment.
+- Confirm salon name, address, phone/WhatsApp, hours, prices, durations, service list, staff, cancellation policy, privacy policy, and approved images with the owner.
+- Owner dashboard currently lists bookings and changes booking status; service editing, staff management, hours/calendar blocks, and customer cancellation are not implemented.
+- No email or WhatsApp booking notifications yet.
+- Concurrent-booking integration tests against a real test database are still required.
+- Playwright MCP connectivity is not verified; Playwright test runner has been used separately.
 
-## Next execution steps
+## Local verification sequence
 
-1. Clone/check out `feat/luxury-salon-scroll-demo`.
-2. Run `npm install`.
-3. Run `npm run typecheck`, `npm run lint` and `npm run build`; resolve all failures.
-4. Run `npm run dev` and open localhost:3000 in Playwright MCP.
-5. Test navigation, all enquiry links, scroll forward/reverse, fast scrolling, mobile widths, reduced-motion, image loading and console/network errors.
-6. Fix issues and rerun all checks.
-7. Add CI and a preview deployment if desired.
-8. Replace demo content before showing the site as a client's live business.
+```powershell
+npm install
+npx playwright install
+npm run typecheck
+npm run lint
+npm run build
+npm run test:e2e
+```
+
+Configure `.env.local` from `.env.example` before database-backed booking flows can succeed. See [BOOKING_AND_DEPLOYMENT.md](./BOOKING_AND_DEPLOYMENT.md).
