@@ -87,12 +87,25 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
     await page.waitForTimeout(500);
   }
   expect(guestBookingFound).toBe(true);
-  // The API poll proves persistence; refresh the dashboard state so the UI
-  // renders the booking even if its first request ran before MongoDB settled.
-  await page.getByRole("button", { name: /refresh/i }).click();
-  await expect(page.getByText(new RegExp(guestName)).first()).toBeVisible({ timeout: 15000 });
-  const bookingCard = page.locator("article").filter({ hasText: "CI Guest " + testInfo.project.name }).first();
-  await expect(bookingCard).toBeVisible();
+  // Wait for the rendered dashboard to catch up with the API-confirmed booking.
+  // The refresh handler updates React state asynchronously, so a single click
+  // followed by an immediate locator assertion can race on slower mobile WebKit.
+  const refreshButton = page.getByRole("button", { name: /refresh/i });
+  const bookingCard = page.locator("article").filter({ hasText: guestName }).filter({
+    has: page.getByRole("button", { name: /cancel/i }),
+  }).first();
+  let renderedBookingFound = false;
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    await refreshButton.click();
+    try {
+      await expect(bookingCard).toBeVisible({ timeout: 1500 });
+      renderedBookingFound = true;
+      break;
+    } catch {
+      // Keep refreshing until the async dashboard request has rendered it.
+    }
+  }
+  expect(renderedBookingFound).toBe(true);
   await bookingCard.getByRole("button", { name: /cancel/i }).click();
   const reopened = await request.post("/api/appointments", { data: payload(4) });
   expect(reopened.status()).toBe(201);
