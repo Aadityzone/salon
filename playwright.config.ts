@@ -2,7 +2,11 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: true,
+  // Keep browser flows serial in CI. The booking integration test deliberately
+  // sends concurrent HTTP requests itself; parallel browser workers otherwise
+  // compete for the same disposable MongoDB and Next.js server during startup.
+  fullyParallel: false,
+  workers: process.env.CI ? 1 : undefined,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: "list",
