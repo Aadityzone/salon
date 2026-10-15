@@ -65,11 +65,15 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   await page.reload();
   await expect(page.getByRole("heading", { name: /the appointment book/i })).toBeVisible();
   const guestName = `CI Guest ${testInfo.project.name}`;
-  await expect.poll(async () => {
-    const response = await page.request.get("/api/admin/appointments", { headers: { cookie: await page.locator("body").evaluate(() => document.cookie) } }).catch(() => null);
-    if (!response) return "request-failed";
-    return response.status();
-  }, { timeout: 15000 }).toBe(200);
+  await expect.poll(async () => page.evaluate(async () => {
+    const response = await fetch("/api/admin/appointments", { cache: "no-store" });
+    if (!response.ok) return response.status();
+    const data = await response.json();
+    return data.appointments?.some((appointment: { customerName: string }) =>
+      appointment.customerName.startsWith("CI Guest mobile-chromium") ||
+      appointment.customerName.startsWith("CI Guest desktop-chromium")
+    ) ? 200 : 202;
+  }), { timeout: 15000 }).toBe(200);
   await expect(page.getByText(new RegExp(guestName)).first()).toBeVisible({ timeout: 15000 });
   const bookingCard = page.locator("article").filter({ hasText: "CI Guest " + testInfo.project.name }).first();
   await expect(bookingCard).toBeVisible();
