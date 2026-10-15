@@ -68,14 +68,17 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   // The database is shared by both browser projects and retries. Wait for this
   // project's booking specifically so another project's older booking cannot
   // satisfy the poll before the current appointment appears in the owner list.
-  await expect.poll(async () => page.evaluate(async (expectedGuestName) => {
-    const response = await fetch("/api/admin/appointments", { cache: "no-store" });
-    if (!response.ok) return response.status();
-    const data = await response.json();
-    return data.appointments?.some((appointment: { customerName: string }) =>
-      appointment.customerName.startsWith(expectedGuestName)
-    ) ? 200 : 202;
-  }, guestName), { timeout: 15000 }).toBe(200);
+  await expect(async () => {
+    const result = await page.evaluate(async (expectedGuestName) => {
+      const response = await fetch("/api/admin/appointments", { cache: "no-store" });
+      if (!response.ok) return response.status();
+      const data = await response.json();
+      return data.appointments?.some((appointment: { customerName: string }) =>
+        appointment.customerName.startsWith(expectedGuestName)
+      ) ? 200 : 202;
+    }, guestName);
+    expect(result).toBe(200);
+  }).toPass({ timeout: 15000 });
   // The API poll proves persistence; refresh the dashboard state so the UI
   // renders the booking even if its first request ran before MongoDB settled.
   await page.getByRole("button", { name: /refresh/i }).click();
