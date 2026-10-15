@@ -20,6 +20,11 @@ test("owner dashboard requires authentication", async ({ page, request }) => {
 test("invalid appointment payload is rejected before database access", async ({ request }) => {
   const response = await request.post("/api/appointments", { data: { serviceId: "not-an-id" } });
   expect(response.status()).toBe(400);
+  const invalidPhone = await request.post("/api/appointments", { data: {
+    serviceId: "507f1f77bcf86cd799439011", date: "2030-01-02", time: "10:00",
+    customerName: "Test Guest", customerPhone: "not-a-phone",
+  } });
+  expect(invalidPhone.status()).toBe(400);
 });
 
 test("concurrent bookings never exceed available staff capacity and owner can view them", async ({ page, request }, testInfo) => {
