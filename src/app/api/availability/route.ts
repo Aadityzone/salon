@@ -3,9 +3,8 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import Service from "@/models/Service";
 import { SlotReservation } from "@/models/Appointment";
+import { atSalonTime, getBusinessHours } from "@/lib/business-hours";
 export const runtime = "nodejs";
-const TZ = "+05:30";
-function atIST(date: string, time: string) { return new Date(date + "T" + time + ":00" + TZ); }
 export async function GET(request: NextRequest) {
   const date = request.nextUrl.searchParams.get("date") ?? "";
   const serviceId = request.nextUrl.searchParams.get("serviceId") ?? "";
@@ -15,18 +14,19 @@ export async function GET(request: NextRequest) {
     const service = await Service.findOne({ _id: serviceId, active: true }).lean();
     if (!service) return NextResponse.json({ error: "That service is unavailable." }, { status: 404 });
     const staffIds = ["team-1", "team-2"];
+    const { open, close } = getBusinessHours();
     const durationSlots = Math.ceil(service.durationMinutes / 15);
-    const dayStart = atIST(date, "00:00");
-    const dayEnd = atIST(date, "23:59");
+    const dayStart = atSalonTime(date, "00:00");
+    const dayEnd = atSalonTime(date, "23:59");
     const reserved = await SlotReservation.find({ staffId: { $in: staffIds }, slotStart: { $gte: dayStart, $lte: dayEnd } }).select("staffId slotStart").lean();
     const occupied = new Set(reserved.map(r => r.staffId + "|" + new Date(r.slotStart).toISOString()));
     const slots: { time: string; available: boolean }[] = [];
     const now = Date.now();
-    for (let minute = 10 * 60; minute + service.durationMinutes <= 19 * 60; minute += 15) {
+    for (let minute = open.minutes; minute + service.durationMinutes <= close.minutes; minute += 15) {
       const hh = String(Math.floor(minute / 60)).padStart(2, "0");
       const mm = String(minute % 60).padStart(2, "0");
       const time = hh + ":" + mm;
-      const start = atIST(date, time);
+      const start = atSalonTime(date, time);
       if (start.getTime() <= now) continue;
       let available = false;
       for (const staffId of staffIds) {
