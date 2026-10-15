@@ -12,14 +12,16 @@ async function notifyOwner(appointment: { id: string; customerName: string; cust
   const webhook = process.env.OWNER_NOTIFICATION_WEBHOOK?.trim();
   if (!webhook) return;
   try {
-    await fetch(webhook, {
+    const response = await fetch(webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ event: "appointment.confirmed", salon: "Maison Belle", ...appointment }),
       signal: AbortSignal.timeout(3000),
     });
-  } catch {
+    if (!response.ok) console.error("Owner booking webhook returned HTTP", response.status);
+  } catch (error) {
     // Booking remains confirmed if an external notification provider is unavailable.
+    console.error("Owner booking webhook delivery failed:", error instanceof Error ? error.message : "Unknown error");
   }
 }
 // Initialize both collections/indexes once before accepting concurrent bookings.
