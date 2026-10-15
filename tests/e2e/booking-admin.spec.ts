@@ -13,6 +13,8 @@ test("owner dashboard requires authentication", async ({ page, request }) => {
   await expect(page.getByRole("heading", { name: /welcome back/i })).toBeVisible();
   const response = await request.get("/api/admin/appointments");
   expect(response.status()).toBe(401);
+  const servicesResponse = await request.get("/api/admin/services");
+  expect(servicesResponse.status()).toBe(401);
 });
 
 test("invalid appointment payload is rejected before database access", async ({ request }) => {
