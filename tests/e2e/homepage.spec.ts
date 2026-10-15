@@ -53,3 +53,12 @@ test("service categories switch the translucent menu in place", async ({ page })
   await expect(panel.getByRole("heading", { name: /soft glam/i })).toBeVisible();
   await expect(page.getByRole("link", { name: /book party makeup/i })).toHaveAttribute("href", /category=Makeup.*service=Party/);
 });
+
+test("service menu booking link preselects the requested service", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("tab", { name: /makeup/i }).click();
+  await page.getByRole("link", { name: /book party makeup/i }).click();
+  await expect(page).toHaveURL(/\/book\?category=Makeup&service=Party/);
+  const requestedService = page.getByRole("button", { name: /party makeup/i });
+  await expect(requestedService).toHaveAttribute("aria-pressed", "true");
+});
