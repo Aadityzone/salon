@@ -23,6 +23,7 @@ function ensureBookingIndexes() {
 
 const BookingInput = z.object({
   serviceId: z.string().refine(mongoose.isValidObjectId, "Invalid service."),
+  staffId: z.enum(["any", "team-1", "team-2"]).default("any"),
   date: z.string().refine(isValidDateString, "Invalid calendar date."),
   time: z.string().regex(/^(?:[01]\d|2[0-3]):(?:00|15|30|45)$/),
   customerName: z.string().trim().min(2).max(100),
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
       priceInPaise: service.priceInPaise, startsAt, endsAt, status: "confirmed",
     });
     const slotCount = Math.ceil(service.durationMinutes / 15);
-    const staffIds = ["team-1", "team-2"];
+    const staffIds = input.staffId === "any" ? ["team-1", "team-2"] : [input.staffId];
     for (const staffId of staffIds) {
       const reservations = Array.from({ length: slotCount }, (_, index) => ({
         staffId, slotStart: new Date(startsAt.getTime() + index * 15 * 60_000), appointmentId: appointment._id,
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
       try {
         await SlotReservation.insertMany(reservations, { ordered: true });
         await Appointment.updateOne({ _id: appointment._id }, { $set: { staffId } });
-        return NextResponse.json({ appointment: { id: String(appointment._id), serviceName: service.name, date: input.date, time: input.time, status: "confirmed", priceInPaise: service.priceInPaise }, message: "Your appointment is confirmed." }, { status: 201 });
+        return NextResponse.json({ appointment: { id: String(appointment._id), serviceName: service.name, date: input.date, time: input.time, staffId, status: "confirmed", priceInPaise: service.priceInPaise }, message: "Your appointment is confirmed." }, { status: 201 });
       } catch {
         await SlotReservation.deleteMany({ appointmentId: appointment._id });
       }
