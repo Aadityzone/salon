@@ -1,54 +1,73 @@
-# Maison Belle — Luxury Salon Demo
+# Maison Belle — Luxury Salon Website & Booking
 
-A premium, mobile-first women's salon website concept designed to demonstrate cinematic scroll storytelling, editorial beauty imagery, service discovery, and a clear WhatsApp enquiry journey.
+A premium Next.js salon website with a MongoDB-backed appointment flow, protected owner dashboard, service management, and Playwright checks.
 
-> **Demo notice:** Service prices, testimonials, photography, contact details, opening hours, address and business claims are illustrative. Replace and verify these before using this as a real salon website.
+> **Pre-launch notice:** Maison Belle branding, service prices/durations, images, reviews, address, phone, opening hours, staff and policies are still illustrative or starter defaults. Confirm them with the salon owner before accepting real customers.
 
 ## Stack
 
 - Next.js App Router + React + TypeScript
-- Tailwind CSS v4
-- GSAP + ScrollTrigger for scroll reveals, subtle parallax and pinned chapter storytelling
-- Motion for React for component interactions and entrance transitions
-- Lucide React icons
+- Tailwind CSS v4, GSAP + ScrollTrigger, Motion, Lucide
+- MongoDB + Mongoose
+- Zod request validation
+- bcryptjs password-hash verification and jose-signed HTTP-only owner session
+- Playwright E2E tests and GitHub Actions quality workflow
+
+## Routes
+
+- `/` — premium salon homepage
+- `/book` — customer appointment booking
+- `/admin` — owner sign-in and appointment dashboard
+- `/admin/services` — protected service catalogue management
+- `/api/health` — MongoDB connectivity check
+- `/api/services` — active salon services
+- `/api/availability?serviceId=<id>&date=YYYY-MM-DD` — available times
+- `POST /api/appointments` — create an appointment with unique staff/15-minute slot reservations
 
 ## Run locally
 
-Requirements: Node.js 20.9+ recommended.
+Requirements: Node.js 20.9+ recommended and a MongoDB Atlas cluster or local MongoDB.
 
-```bash
-npm install
-npm run dev
-```
+1. Copy `.env.example` to `.env.local`.
+2. Set `MONGODB_URI`, `OWNER_EMAIL`, `OWNER_PASSWORD_HASH`, `OWNER_SESSION_SECRET`, `SALON_OPEN_TIME`, `SALON_CLOSE_TIME`, and the `NEXT_PUBLIC_SALON_*` values.
+3. Generate an owner password hash:
+   ```powershell
+   node -e "require('bcryptjs').hash('REPLACE_WITH_A_STRONG_PASSWORD', 12).then(console.log)"
+   ```
+   Put the printed hash in `OWNER_PASSWORD_HASH`; never store the plain password in the repo.
+4. Install and seed the starter service menu:
+   ```powershell
+   npm install
+   npm run seed
+   npm run dev
+   ```
+5. Open http://localhost:3000, then test `/book`, `/admin`, and `/api/health`.
 
-Open http://localhost:3000.
+See [Booking & Deployment](docs/BOOKING_AND_DEPLOYMENT.md) for MongoDB Atlas and Vercel Preview setup.
 
-## Checks
+## Quality checks
 
-```bash
+```powershell
 npm run typecheck
 npm run lint
 npm run build
+npm run test:e2e
 ```
 
-## Design approach
+Playwright needs the configured Chromium and WebKit browsers installed. The GitHub Actions workflow runs the test suite against a disposable MongoDB service, including a concurrent-booking capacity test.
 
-- Warm ivory, blush, rose and espresso palette
-- Editorial serif headings and restrained sans-serif body typography
-- Mobile-first responsive layouts
-- Reduced-motion fallback for the pinned storytelling chapter
-- WhatsApp enquiry links rather than a fake booking confirmation
-- Placeholder notice for illustrative content
+## Booking protection
 
-## Next steps before production
+Bookings use Asia/Kolkata time and configurable opening hours. The server validates each request, checks the selected service duration, and reserves 15-minute blocks for one of two staff IDs. A unique compound index on `staffId + slotStart` prevents concurrent requests from reserving the same staff slot; requests that cannot reserve every required block return HTTP 409. Owner cancellation releases the reserved blocks.
 
-1. Replace the demo WhatsApp number and contact details with verified salon details.
-2. Replace illustrative imagery with properly licensed assets or the salon's own portfolio.
-3. Replace illustrative service prices and testimonials with owner-approved content.
-4. Check and tune image/video assets and mobile performance.
-5. Verify the complete customer journey with Playwright MCP.
-6. Add a real appointment backend only if the owner requires it. Booking should not be represented as confirmed unless it's persisted and the salon has an actual confirmation workflow.
+## Before production
 
-## Cinematic motion direction
+- Replace all starter service names/prices/durations and confirm real business hours.
+- Set the real public salon name/contact/address and approved/licensed images.
+- Set production MongoDB Atlas credentials and Vercel environment variables separately from development.
+- Add staff management, blocked dates, customer cancellation, notification delivery, rate limiting, audit logs, monitoring/backups, and privacy/cancellation policies.
+- Run all quality checks on the latest commit and test with the owner before launch.
+
+## Motion direction
 
 GSAP owns scroll-driven reveals, parallax and the pinned chapter sequence. Motion owns component-level entrance and hover interactions. Do not animate the same element with both libraries. Respect `prefers-reduced-motion`, keep primary actions immediately available, and verify fast-scroll, reverse-scroll and mobile behavior.
