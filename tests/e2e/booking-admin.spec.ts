@@ -18,5 +18,4 @@ test("owner dashboard requires authentication", async ({ page, request }) => {
 test("invalid appointment payload is rejected before database access", async ({ request }) => {
   const response = await request.post("/api/appointments", { data: { serviceId: "not-an-id" } });
   expect(response.status()).toBe(400);
-  await expect(response).toBeOK().catch(() => undefined);
 });
