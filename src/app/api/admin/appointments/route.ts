@@ -22,9 +22,21 @@ export async function PATCH(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid status." }, { status: 400 });
   try {
     await connectDB();
-    const appointment = await Appointment.findByIdAndUpdate(id, { $set: { status: parsed.data.status } }, { new: true });
-    if (!appointment) return NextResponse.json({ error: "Appointment not found." }, { status: 404 });
-    if (parsed.data.status === "cancelled") await SlotReservation.deleteMany({ appointmentId: appointment._id });
+    // Only confirmed appointments can transition to a terminal state. This prevents
+    // cancelled bookings from being marked completed (or completed bookings cancelled).
+    const appointment = await Appointment.findOneAndUpdate(
+      { _id: id, status: "confirmed" },
+      { $set: { status: parsed.data.status } },
+      { new: true },
+    );
+    if (!appointment) {
+      const exists = await Appointment.exists({ _id: id });
+      if (!exists) return NextResponse.json({ error: "Appointment not found." }, { status: 404 });
+      return NextResponse.json({ error: "This appointment has already been updated." }, { status: 409 });
+    }
+    if (parsed.data.status === "cancelled") {
+      await SlotReservation.deleteMany({ appointmentId: appointment._id });
+    }
     return NextResponse.json({ ok: true, id, status: appointment.status });
   } catch { return NextResponse.json({ error: "Could not update appointment." }, { status: 503 }); }
 }
