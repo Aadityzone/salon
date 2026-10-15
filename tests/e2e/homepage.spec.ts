@@ -42,6 +42,7 @@ test("page has no horizontal overflow at phone width", async ({ page }) => {
 
 test("service categories switch the translucent menu in place", async ({ page }) => {
   await page.goto("/#services");
+  await page.getByRole("button", { name: /view all services/i }).click();
   const panel = page.getByRole("tabpanel");
   await expect(panel).toBeVisible();
   await expect(panel.getByRole("heading", { name: /signature haircut/i })).toBeVisible();
@@ -58,6 +59,7 @@ test("service menu booking link preselects the requested service", async ({ page
   // Start at the service explorer so scroll-triggered/pinned sections cannot
   // leave the category controls outside the viewport during this interaction.
   await page.goto("/#services");
+  await page.getByRole("button", { name: /view all services/i }).click();
   await expect(page.getByRole("tab", { name: /makeup/i })).toBeVisible();
   await page.getByRole("tab", { name: /makeup/i }).click();
   const makeupPanel = page.getByRole("tabpanel");
