@@ -39,3 +39,17 @@ test("page has no horizontal overflow at phone width", async ({ page }) => {
   }));
   expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport);
 });
+
+test("service categories switch the translucent menu in place", async ({ page }) => {
+  await page.goto("/#services");
+  const panel = page.getByRole("tabpanel");
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole("heading", { name: /signature haircut/i })).toBeVisible();
+  await page.getByRole("tab", { name: /nails/i }).click();
+  await expect(page.getByRole("tab", { name: /nails/i })).toHaveAttribute("aria-selected", "true");
+  await expect(panel.getByRole("heading", { name: /classic manicure/i })).toBeVisible();
+  await expect(panel.getByRole("heading", { name: /signature haircut/i })).toHaveCount(0);
+  await page.getByRole("tab", { name: /makeup/i }).click();
+  await expect(panel.getByRole("heading", { name: /soft glam/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /book party makeup/i })).toHaveAttribute("href", /category=Makeup.*service=Party/);
+});
