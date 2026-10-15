@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongodb";
 import Service from "@/models/Service";
 import { SlotReservation } from "@/models/Appointment";
 import { atSalonTime, getBusinessHours, isValidDateString } from "@/lib/business-hours";
+import { getSalonStaff, staffCanTakeTime } from "@/lib/staff";
 export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   const date = request.nextUrl.searchParams.get("date") ?? "";
@@ -15,7 +16,8 @@ export async function GET(request: NextRequest) {
     await connectDB();
     const service = await Service.findOne({ _id: serviceId, active: true }).lean();
     if (!service) return NextResponse.json({ error: "That service is unavailable." }, { status: 404 });
-    const staffIds = requestedStaff === "any" ? ["team-1", "team-2"] : [requestedStaff];
+    const staffProfiles = getSalonStaff();
+    const staffIds = (requestedStaff === "any" ? staffProfiles.map(person => person.id) : [requestedStaff]).filter(id => staffProfiles.some(person => person.id === id));
     const { open, close } = getBusinessHours();
     const durationSlots = Math.ceil(service.durationMinutes / 15);
     const dayStart = atSalonTime(date, "00:00");
@@ -32,6 +34,8 @@ export async function GET(request: NextRequest) {
       if (start.getTime() <= now) continue;
       let available = false;
       for (const staffId of staffIds) {
+        const staffProfile = staffProfiles.find(person => person.id === staffId);
+        if (!staffProfile || !staffCanTakeTime(staffProfile, date, time, service.durationMinutes)) continue;
         let free = true;
         for (let i = 0; i < durationSlots; i++) {
           const slot = new Date(start.getTime() + i * 15 * 60_000).toISOString();
@@ -41,6 +45,6 @@ export async function GET(request: NextRequest) {
       }
       slots.push({ time, available });
     }
-    return NextResponse.json({ date, staffId: requestedStaff, service: { id: String(service._id), durationMinutes: service.durationMinutes }, slots });
+    return NextResponse.json({ date, staffId: requestedStaff, staff: staffProfiles.map(({ id, name, workingDays, opensAt, closesAt }) => ({ id, name, workingDays, opensAt, closesAt })), service: { id: String(service._id), durationMinutes: service.durationMinutes }, slots });
   } catch { return NextResponse.json({ error: "Could not check availability right now." }, { status: 503 }); }
 }
