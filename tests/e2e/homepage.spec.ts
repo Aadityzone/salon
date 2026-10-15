@@ -57,7 +57,11 @@ test("service categories switch the translucent menu in place", async ({ page })
 test("service menu booking link preselects the requested service", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("tab", { name: /makeup/i }).click();
-  await page.getByRole("link", { name: /book party makeup/i }).click();
+  const makeupPanel = page.getByRole("tabpanel");
+  await expect(makeupPanel.getByText("Party makeup", { exact: true })).toBeVisible();
+  const bookingLink = makeupPanel.locator('a[aria-label="Book Party makeup"]');
+  await expect(bookingLink).toBeVisible();
+  await bookingLink.click();
   await expect(page).toHaveURL(/\/book\?category=Makeup&service=Party/);
   const requestedService = page.getByRole("button", { name: /party makeup/i });
   await expect(requestedService).toHaveAttribute("aria-pressed", "true");
