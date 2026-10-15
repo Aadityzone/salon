@@ -65,14 +65,17 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   await page.reload();
   await expect(page.getByRole("heading", { name: /the appointment book/i })).toBeVisible();
   const guestName = `CI Guest ${testInfo.project.name}`;
-  await expect.poll(async () => page.evaluate(async () => {
+  // The database is shared by both browser projects and retries. Wait for this
+  // project's booking specifically so another project's older booking cannot
+  // satisfy the poll before the current appointment appears in the owner list.
+  await expect.poll(async () => page.evaluate(async (expectedGuestName) => {
     const response = await fetch("/api/admin/appointments", { cache: "no-store" });
     if (!response.ok) return response.status();
     const data = await response.json();
     return data.appointments?.some((appointment: { customerName: string }) =>
-      appointment.customerName.startsWith("CI Guest ")
+      appointment.customerName.startsWith(expectedGuestName)
     ) ? 200 : 202;
-  }), { timeout: 15000 }).toBe(200);
+  }, guestName), { timeout: 15000 }).toBe(200);
   await expect(page.getByText(new RegExp(guestName)).first()).toBeVisible({ timeout: 15000 });
   const bookingCard = page.locator("article").filter({ hasText: "CI Guest " + testInfo.project.name }).first();
   await expect(bookingCard).toBeVisible();
