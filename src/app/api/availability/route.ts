@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import Service from "@/models/Service";
 import { SlotReservation } from "@/models/Appointment";
-import { atSalonTime, getBusinessHours } from "@/lib/business-hours";
+import { atSalonTime, getBusinessHours, isValidDateString } from "@/lib/business-hours";
 export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   const date = request.nextUrl.searchParams.get("date") ?? "";
   const serviceId = request.nextUrl.searchParams.get("serviceId") ?? "";
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !mongoose.isValidObjectId(serviceId)) return NextResponse.json({ error: "Choose a valid date and service." }, { status: 400 });
+  if (!isValidDateString(date) || !mongoose.isValidObjectId(serviceId)) return NextResponse.json({ error: "Choose a valid date and service." }, { status: 400 });
   try {
     await connectDB();
     const service = await Service.findOne({ _id: serviceId, active: true }).lean();
