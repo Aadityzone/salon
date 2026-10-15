@@ -6,6 +6,21 @@ import Service from "@/models/Service";
 import { Appointment, SlotReservation } from "@/models/Appointment";
 import { atSalonTime, getBusinessHours, isValidDateString } from "@/lib/business-hours";
 export const runtime = "nodejs";
+
+async function notifyOwner(appointment: { id: string; customerName: string; customerPhone: string; serviceName: string; date: string; time: string; staffId: string; priceInPaise: number }) {
+  const webhook = process.env.OWNER_NOTIFICATION_WEBHOOK?.trim();
+  if (!webhook) return;
+  try {
+    await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event: "appointment.confirmed", salon: "Maison Belle", ...appointment }),
+      signal: AbortSignal.timeout(3000),
+    });
+  } catch {
+    // Booking remains confirmed if an external notification provider is unavailable.
+  }
+}
 // Initialize both collections/indexes once before accepting concurrent bookings.
 // MongoDB can race when several first writes try to create a collection at once;
 // the shared promise also ensures the unique slot index is ready before any write.
@@ -61,6 +76,7 @@ export async function POST(request: NextRequest) {
       try {
         await SlotReservation.insertMany(reservations, { ordered: true });
         await Appointment.updateOne({ _id: appointment._id }, { $set: { staffId } });
+        await notifyOwner({ id: String(appointment._id), customerName: input.customerName, customerPhone: input.customerPhone, serviceName: service.name, date: input.date, time: input.time, staffId, priceInPaise: service.priceInPaise });
         return NextResponse.json({ appointment: { id: String(appointment._id), serviceName: service.name, date: input.date, time: input.time, staffId, status: "confirmed", priceInPaise: service.priceInPaise }, message: "Your appointment is confirmed." }, { status: 201 });
       } catch {
         await SlotReservation.deleteMany({ appointmentId: appointment._id });
