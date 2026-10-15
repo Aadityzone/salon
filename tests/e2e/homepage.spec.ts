@@ -68,6 +68,6 @@ test("service menu booking link preselects the requested service", async ({ page
   await expect(bookingLink).toBeVisible();
   await bookingLink.click();
   await expect(page).toHaveURL(/\/book\?category=Makeup&service=Party/);
-  const requestedService = page.getByRole("button", { name: /party makeup/i });
-  await expect(requestedService).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("heading", { name: /party makeup/i })).toBeVisible();
+  await expect(page.getByText(/₹2,999 · 75 min/)).toBeVisible();
 });
