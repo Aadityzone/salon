@@ -46,7 +46,7 @@
 - Use a production MongoDB database/user distinct from development. Restrict network access and grant least privilege.
 - Configure a random `OWNER_SESSION_SECRET` of at least 32 characters, a verified owner email, and a bcrypt password hash.
 - Replace illustrative service prices/durations, testimonials, opening hours, salon address, phone/WhatsApp, images, and policies with owner-approved details.
-- Verify business timezone and hours with the owner. Current booking code uses Asia/Kolkata and a 10:00–19:00 schedule.
+- Verify business timezone and hours with the owner. Booking uses Asia/Kolkata and configurable `SALON_OPEN_TIME` / `SALON_CLOSE_TIME` values (defaults: 10:00–19:00). The current time-zone offset is India Standard Time (+05:30).
 - Configure backups, MongoDB monitoring, error logging, privacy/retention policy, cancellation policy, and a contact method before public launch.
 - Run `npm run typecheck`, `npm run lint`, `npm run build`, and `npm run test:e2e` after installing dependencies and browsers.
 - Run a concurrent booking test against a real test database before accepting real customer bookings.
