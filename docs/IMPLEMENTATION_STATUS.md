@@ -14,7 +14,7 @@
 - This GitHub-editing environment cannot run the repository locally; TypeScript, lint, production build and Playwright results after these latest changes have **not** been verified.
 - Real MongoDB Atlas URI, owner email, bcrypt password hash, and session secret must be set locally and in Vercel Preview environment.
 - Confirm salon name, address, phone/WhatsApp, hours, prices, durations, service list, staff, cancellation policy, privacy policy, and approved images with the owner.
-- Owner dashboard currently lists bookings and changes booking status; service editing, staff management, hours/calendar blocks, and customer cancellation are not implemented.
+- Owner dashboard lists bookings and changes booking status; service catalog editing is available at `/admin/services`. Staff management, hours/calendar blocks, and customer cancellation are not implemented.
 - No email or WhatsApp booking notifications yet.
 - Concurrent-booking integration tests against a real test database are still required.
 - Playwright MCP connectivity is not verified; Playwright test runner has been used separately.
