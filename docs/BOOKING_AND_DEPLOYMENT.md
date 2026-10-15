@@ -9,6 +9,7 @@
 - Booking API: `POST /api/appointments`. It validates the payload, checks salon hours (10:00–19:00 Asia/Kolkata), and reserves all required 15-minute slots. If a competing booking wins any slot, partial reservations are removed and the request returns HTTP 409.
 - Owner login with bcrypt password-hash verification and an HTTP-only, same-site JWT cookie.
 - Protected owner appointments API with status updates; cancellation releases reserved slots.
+- Owner service management at `/admin/services` for editing service names, categories, descriptions, prices, durations, and booking visibility.
 - Customer booking page at `/book` and owner dashboard/login at `/admin`.
 
 ## Local setup
