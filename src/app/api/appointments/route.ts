@@ -6,6 +6,17 @@ import Service from "@/models/Service";
 import { Appointment, SlotReservation } from "@/models/Appointment";
 import { atSalonTime, getBusinessHours, isValidDateString } from "@/lib/business-hours";
 export const runtime = "nodejs";
+// Index creation is shared across concurrent first-time booking requests. Calling
+// createIndexes independently inside every request can race during cold starts.
+let slotIndexesReady: Promise<unknown> | undefined;
+function ensureSlotIndexes() {
+  slotIndexesReady ??= SlotReservation.createIndexes().catch((error) => {
+    slotIndexesReady = undefined;
+    throw error;
+  });
+  return slotIndexesReady;
+}
+
 const BookingInput = z.object({
   serviceId: z.string().refine(mongoose.isValidObjectId, "Invalid service."),
   date: z.string().refine(isValidDateString, "Invalid calendar date."),
@@ -22,7 +33,7 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
     // Ensure the unique staff/slot index exists before accepting any bookings.
-    await SlotReservation.createIndexes();
+    await ensureSlotIndexes();
     const service = await Service.findOne({ _id: input.serviceId, active: true });
     if (!service) return NextResponse.json({ error: "That service is no longer available." }, { status: 404 });
     const startsAt = atSalonTime(input.date, input.time);
