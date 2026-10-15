@@ -8,12 +8,14 @@ export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   const date = request.nextUrl.searchParams.get("date") ?? "";
   const serviceId = request.nextUrl.searchParams.get("serviceId") ?? "";
+  const requestedStaff = request.nextUrl.searchParams.get("staffId") ?? "any";
+  if (!["any", "team-1", "team-2"].includes(requestedStaff)) return NextResponse.json({ error: "Choose a valid stylist." }, { status: 400 });
   if (!isValidDateString(date) || !mongoose.isValidObjectId(serviceId)) return NextResponse.json({ error: "Choose a valid date and service." }, { status: 400 });
   try {
     await connectDB();
     const service = await Service.findOne({ _id: serviceId, active: true }).lean();
     if (!service) return NextResponse.json({ error: "That service is unavailable." }, { status: 404 });
-    const staffIds = ["team-1", "team-2"];
+    const staffIds = requestedStaff === "any" ? ["team-1", "team-2"] : [requestedStaff];
     const { open, close } = getBusinessHours();
     const durationSlots = Math.ceil(service.durationMinutes / 15);
     const dayStart = atSalonTime(date, "00:00");
@@ -39,6 +41,6 @@ export async function GET(request: NextRequest) {
       }
       slots.push({ time, available });
     }
-    return NextResponse.json({ date, service: { id: String(service._id), durationMinutes: service.durationMinutes }, slots });
+    return NextResponse.json({ date, staffId: requestedStaff, service: { id: String(service._id), durationMinutes: service.durationMinutes }, slots });
   } catch { return NextResponse.json({ error: "Could not check availability right now." }, { status: 503 }); }
 }
