@@ -58,14 +58,14 @@ Playwright needs the configured Chromium and WebKit browsers installed. The GitH
 
 ## Booking protection
 
-Bookings use Asia/Kolkata time and configurable opening hours. The server validates each request, checks the selected service duration, and reserves 15-minute blocks for one of two staff IDs. A unique compound index on `staffId + slotStart` prevents concurrent requests from reserving the same staff slot; requests that cannot reserve every required block return HTTP 409. Owner cancellation releases the reserved blocks.
+Bookings use Asia/Kolkata time and configurable salon opening hours. Stylist names, working days, and individual shift hours can be configured with `SALON_STAFF_1_*` and `SALON_STAFF_2_*` variables (days are comma-separated `Mon,Tue,Wed,Thu,Fri,Sat,Sun`). Availability and booking creation both enforce those shifts and the selected service duration, then reserve 15-minute blocks for one of two staff IDs. A unique compound index on `staffId + slotStart` prevents concurrent requests from reserving the same staff slot; requests that cannot reserve every required block return HTTP 409. Owner cancellation releases the reserved blocks.
 
 ## Before production
 
 - Replace all starter service names/prices/durations and confirm real business hours.
 - Set the real public salon name/contact/address and approved/licensed images.
 - Set production MongoDB Atlas credentials and Vercel environment variables separately from development. Configure `OWNER_NOTIFICATION_WEBHOOK` with a trusted endpoint if the owner needs server-to-server booking alerts; leave it blank to disable external notifications.
-- Replace generic Stylist 1 / Stylist 2 labels with real staff profiles and availability. Add blocked dates, customer cancellation, a tested notification provider, rate limiting, audit logs, monitoring/backups, and privacy/cancellation policies.
+- Configure the real stylist names, working days, and shift hours using the `SALON_STAFF_1_*` / `SALON_STAFF_2_*` environment variables. Add staff profile photos/bios, blocked dates, customer cancellation, a tested notification provider, rate limiting, audit logs, monitoring/backups, and privacy/cancellation policies.
 - Run all quality checks on the latest commit and test with the owner before launch.
 
 ## Motion direction
