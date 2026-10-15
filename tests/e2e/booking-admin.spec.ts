@@ -60,7 +60,10 @@ test("concurrent bookings never exceed available staff capacity and owner can vi
   await page.getByLabel("Password").fill("TestOwnerPass123!");
   await page.getByRole("button", { name: /sign in securely/i }).click();
   await expect(page.getByRole("heading", { name: /the appointment book/i })).toBeVisible();
-  await expect(page.getByText(new RegExp(`CI Guest ${testInfo.project.name}`)).first()).toBeVisible();
+  // Reload the list after login to avoid asserting against a stale initial
+  // dashboard response while the disposable MongoDB is settling in CI.
+  await page.getByRole("button", { name: /refresh/i }).click();
+  await expect(page.getByText(new RegExp(`CI Guest ${testInfo.project.name}`)).first()).toBeVisible({ timeout: 15000 });
   const bookingCard = page.locator("article").filter({ hasText: "CI Guest " + testInfo.project.name }).first();
   await expect(bookingCard).toBeVisible();
   await bookingCard.getByRole("button", { name: /cancel/i }).click();
