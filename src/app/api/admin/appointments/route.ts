@@ -4,13 +4,14 @@ import { z } from "zod";
 import { connectDB } from "@/lib/mongodb";
 import { isOwnerAuthenticated } from "@/lib/owner-auth";
 import { Appointment, SlotReservation } from "@/models/Appointment";
+import { getSalonStaff } from "@/lib/staff";
 export const runtime = "nodejs";
 export async function GET() {
   if (!await isOwnerAuthenticated()) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   try {
     await connectDB();
-    const appointments = await Appointment.find().sort({ startsAt: 1 }).limit(300).lean();
-    return NextResponse.json({ appointments: appointments.map(a => ({ id: String(a._id), customerName: a.customerName, customerPhone: a.customerPhone, customerEmail: a.customerEmail, notes: a.notes, serviceName: a.serviceName, durationMinutes: a.durationMinutes, priceInPaise: a.priceInPaise, staffId: a.staffId, startsAt: a.startsAt, endsAt: a.endsAt, status: a.status })) });
+    const [appointments, staff] = await Promise.all([Appointment.find().sort({ startsAt: 1 }).limit(300).lean(), Promise.resolve(getSalonStaff())]);
+    return NextResponse.json({ appointments: appointments.map(a => ({ id: String(a._id), customerName: a.customerName, customerPhone: a.customerPhone, customerEmail: a.customerEmail, notes: a.notes, serviceName: a.serviceName, durationMinutes: a.durationMinutes, priceInPaise: a.priceInPaise, staffId: a.staffId, staffName: staff.find(person => person.id === a.staffId)?.name ?? "Assigned team member", startsAt: a.startsAt, endsAt: a.endsAt, status: a.status })) });
   } catch { return NextResponse.json({ error: "Could not load appointments." }, { status: 503 }); }
 }
 const StatusInput = z.object({ status: z.enum(["cancelled", "completed"]) });
